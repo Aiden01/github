@@ -12,8 +12,13 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
+extern crate reqwest;
+use reqwest::{Client as HttpClient, Response as HttpResponse, Result as HttpResult};
+
 pub struct Client<'a> {
     pub api_key: &'a str,
+    pub http_client: HttpClient,
+    endpoint: &'a str,
 }
 
 impl<'a> Client<'a> {
@@ -23,6 +28,21 @@ impl<'a> Client<'a> {
     {
         Client {
             api_key: api_key.into(),
+            http_client: HttpClient::new(),
+            endpoint: "https://api.github.com/graphql",
         }
+    }
+
+    /**
+     * Makes a request to the API and returns the response
+     */
+    pub fn make_request(&self, body: &'static str) -> HttpResult<HttpResponse> {
+        let response: HttpResponse = self
+            .http_client
+            .post(self.endpoint)
+            .bearer_auth(self.api_key)
+            .body(body)
+            .send()?;
+        Ok(response)
     }
 }
